@@ -1,0 +1,13 @@
+{
+  "name": "Content Authentication",
+  "action": {},
+  "manifest_version": 3,
+  "version": "0.1",
+  "description": "Validate asset authentication headers",
+  "permissions": ["activeTab", "scripting", "webRequest"],
+	"host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "service-worker.js",
+		"type": "module"
+  }
+}
