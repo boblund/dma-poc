@@ -22,7 +22,7 @@ The POC consists of:
 
 Install [NodeJS](https://nodejs.org), if necessary.
 
-Install the chrome extension following the chrome-extensio/README.md. This can be installed on any chromium based browser.
+Install the chrome extension following the chrome-extension/README.md. This can be installed on any chromium based browser.
 
 Start the webserver
 
@@ -36,13 +36,14 @@ The server will start on ```PORT```, if specified, otherwise it will start on a 
 
 Install the chrome extension (chrome-extension/README.md).
 
-Go to ```http://localhost:PORT/creator-media.html```. The extension icon should show authentic media. &nbsp;  ![Alt](./authenticMedia.png) &nbsp;  
+Go to ```http://localhost:PORT/creator-media.html```. The extension icon should show authentic media.
+</br></br><img src="./authenticMedia.png" alt="icon" width="200"/>  
 
-Go to ```http://localhost:PORT/fake-media.html```. The extension icon should show fake media (valid ownership credential but wrong media). &nbsp;  
-![Alt](./fakeMedia.png) &nbsp;  
+Go to ```http://localhost:PORT/fake-media.html```. The extension icon should show fake media (valid ownership credential but wrong media).
+</br></br><img src="./fakeMedia.png" alt="icon" width="200"/>   
 
-Entering any other URL will show unknown media, i.e. no credential. &nbsp;  
-![Alt](./nocred.png) &nbsp;  
+Entering any other URL will show unknown media, i.e. no credential.
+</br></br><img src="./nocred.png" alt="icon" width="200"/>  
 
 ## Content Management
 
