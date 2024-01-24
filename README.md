@@ -22,7 +22,7 @@ The POC consists of:
 
 Install [NodeJS](https://nodejs.org), if necessary.
 
-Install the chrome extension following the chrome-extension/README.md. This can be installed on any chromium based browser.
+Install the chrome extension following ```chrome-extension/README.md```. This can be installed on any chromium based browser.
 
 Start the webserver
 
@@ -33,9 +33,6 @@ Start the webserver
 The server will start on ```PORT```, if specified, otherwise it will start on a random, unused port.
 
 ## Using The Extension
-
-Install the chrome extension (chrome-extension/README.md).
-
 Go to ```http://localhost:PORT/creator-media.html```. The extension icon should show authentic media.
 </br></br><img src="./authenticMedia.png" alt="icon" width="200"/>  
 
