@@ -76,11 +76,11 @@ Certificates must be placed in the ```keys``` directory.
 
 This emulates the work flow for ingesting and registering new content, making clear the roles of the Creator and RA. All media is expected to be in the ```media``` directoy. It is implemented as a set JaveScript asyncronous functions that communicate via channels. Three commands are implemented:
 
-```add:creator name: filename``` causes the creator to ingest the content and initiate the registration.
+```add:creator name:filename``` causes the creator to ingest the content and initiate the registration.
 
 ```list``` displays the contents of ```assets.json``` and ```registeredContent.json```
 
-```delete:creator name: filename``` deletes the media from```assets.json``` and ```registeredContent.json```.
+```delete:creator name:filename``` deletes the media from```assets.json``` and ```registeredContent.json```.
 
 ## Acknowledgements
 
