@@ -1,0 +1,15 @@
+{
+  "name": "dma-poc",
+  "version": "1.0.0",
+  "description": "Digital Media Authentication (DMA) is a mechanism whereby media is bound to a cryptographic ownership credential. The ownership credential can be used to determine: - The identity of the content owner - Is the content unaltered",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
