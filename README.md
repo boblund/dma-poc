@@ -22,6 +22,14 @@ The POC consists of:
 
 Install [NodeJS](https://nodejs.org), if necessary.
 
+Install the dma-poc respository.
+
+```
+git clone git@github.com:boblund/dma-poc.git
+cd dma-poc
+npm i
+```
+
 Install the chrome extension following ```chrome-extension/README.md```. This can be installed on any chromium based browser.
 
 Start the webserver
