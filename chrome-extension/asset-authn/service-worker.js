@@ -31,32 +31,25 @@ chrome.webRequest.onCompleted.addListener(
 		let assetHeader;
 		if((assetHeader = details.responseHeaders.find(e => e.name == 'x-asset')) != undefined){
 			console.log(`x-asset`);
-			let {fingerprint, caaCert, signature} = JSON.parse(assetHeader.value);
+			let {fingerprint, signature} = JSON.parse(assetHeader.value);
+			// check that fingerprint has required fields
 			const pemHeader = '-----BEGIN CERTIFICATE-----\n',
 				pemFooter = '\n-----END CERTIFICATE-----\n',
-				{certificate, subject} = x509cert(caaCert.substring(pemHeader.length, caaCert.length - pemFooter.length));
+				{certificate} = x509cert(fingerprint.raCert.substring(pemHeader.length, fingerprint.raCert.length - pemFooter.length)),
+				alg = certificate.tbsCertificate.signature.algorithm;
 
-			if(subject.CN != 'caa.com'){ // Browser would replace with real certificate check
-				chrome.action.setBadgeText({ tabId: details.tabId, text: ' ' });
-				chrome.action.setBadgeBackgroundColor({tabId: details.tabId, color: '#FF0000'});
-				chrome.action.setTitle({tabId: details.tabId, title: 'Untrusted certiticate'});
-				return;
-			}
-			console.log('subject.CN == caa.com');
-			var alg = certificate.tbsCertificate.signature.algorithm;
 			if (alg !== "1.2.840.113549.1.1.5" && alg !== "1.2.840.113549.1.1.11") {
 				throw new Error("Signature algorithm " + alg + " is not supported yet.");
 			}
 		
-			const hashName = alg === "1.2.840.113549.1.1.11" ? "SHA-256" : "SHA-1";
-		
-			const publicKey = await crypto.subtle.importKey(
-				'spki',
-				certificate.tbsCertificate.subjectPublicKeyInfo.asn1.raw,
-				{name: "RSASSA-PKCS1-v1_5", hash: {name: hashName}},
-				true,
-				["verify"]
-			);
+			const hashName = alg === "1.2.840.113549.1.1.11" ? "SHA-256" : "SHA-1",
+				publicKey = await crypto.subtle.importKey(
+					'spki',
+					certificate.tbsCertificate.subjectPublicKeyInfo.asn1.raw,
+					{name: "RSASSA-PKCS1-v1_5", hash: {name: hashName}},
+					true,
+					["verify"]
+				);
 
 			let verified = await crypto.subtle.verify(
 				{name: "RSASSA-PKCS1-v1_5", hash: {name: hashName}},
@@ -64,6 +57,13 @@ chrome.webRequest.onCompleted.addListener(
 				certificate.signatureValue.bits.bytes,
 				certificate.tbsCertificate.asn1.raw
 			);
+			
+			if(!verified /* || TBD certificate issuer not trusted */) {
+				chrome.action.setBadgeText({ tabId: details.tabId, text: ' ' });
+				chrome.action.setBadgeBackgroundColor({tabId: details.tabId, color: '#FF0000'});
+				chrome.action.setTitle({tabId: details.tabId, title: 'Invalid or untrusted Registration Authority PORcertiticate'});
+				return;
+			}
 
 			verified = await crypto.subtle.verify(
 				{name: "RSASSA-PKCS1-v1_5", hash: {name: hashName}},
@@ -87,7 +87,7 @@ chrome.webRequest.onCompleted.addListener(
 
 				hash = await sha256(s[0].result);
 			}
-			console.log(`content hash: ${hash}\nfingerprint.contentHash: ${fingerprint.contentHash}`);
+
 			chrome.action.setBadgeText({ tabId: details.tabId, text: ' ' });
 			chrome.action.setBadgeBackgroundColor({
 				tabId: details.tabId,
@@ -95,7 +95,8 @@ chrome.webRequest.onCompleted.addListener(
 			});
 			chrome.action.setTitle({
 				tabId: details.tabId,
-				title: `${(verified && hash == fingerprint.contentHash) ? 'From' : 'NOT from'} ${fingerprint.creator}. `});
+				title: `Credential details: \n\  CN: ${fingerprint.creatorCN}\n\  O: ${fingerprint.creatorO}\n`
+			});
 		}
 		return;
 	}, {urls: ['https://*/*', 'http://*/*']}, ['responseHeaders']

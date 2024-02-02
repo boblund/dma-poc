@@ -39,7 +39,7 @@ function setHeaders(res, path){
 	if(assets['creator.com'][file] != undefined){
 		res.setHeader('x-asset', JSON.stringify({
 			fingerprint: {...assets['creator.com'][file].fingerprint},
-			caaCert: fs.readFileSync(`./keys/caa.com-cert.pem`).toString(),
+			//caaCert: fs.readFileSync(`./keys/caa.com-cert.pem`).toString(),
 			signature: assets['creator.com'][file].signature
 		}));
 	}

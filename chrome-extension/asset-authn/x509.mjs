@@ -1,5 +1,8 @@
 // https://blog.engelke.com/2014/10/21/web-crypto-and-x-509-certificates/
 
+// This, and it's use in service worker, could (should?) be replaced using the browser builtin crypto.subtle package
+// https://gist.github.com/pedrouid/b4056fd1f754918ddae86b32cf7d803e#rsassa-pkcs1-v1_5
+
 export {x509cert};
 
 function berToJavaScript(byteArray) {
@@ -218,7 +221,9 @@ function x509cert(cert) {
 				'1.8.9.6.3.85.4.6.19': 'C',
 				'1.8.9.6.3.85.4.8.12': 'ST',
 				'1.8.13.6.3.85.4.7.12': 'L',
-				'1.8.14.6.3.85.4.3.12': 'CN'
+				'1.8.14.6.3.85.4.3.12': 'CN',
+				'1.8.18.6.3.85.4.3.12': 'CN',
+				'1.8.20.6.3.85.4.10.12': 'O'
 			};
 			const oid = berObjectIdentifierValue(berObject.contents.slice(0, 8));
 			subject[oid2name[oid] ? oid2name[oid] : oid] = dec.decode(berObject.contents.slice(9));

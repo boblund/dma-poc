@@ -1,2 +1,2 @@
 echo 'Making X509 certificate for' ${1}
-openssl req -new -x509 -key ${1}-privateKey.pem -out ${1}-cert.pem -days 360 -subj "/C=US/ST=CO/L=Denver/CN=${1}.com/O={1},Inc.}"
+openssl req -new -x509 -key keys/${1}-privateKey.pem -out keys/${1}-cert.pem -days 360 -subj "/C=US/ST=CO/L=Denver/CN=${1}/O=${2}"

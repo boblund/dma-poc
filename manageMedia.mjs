@@ -1,6 +1,7 @@
 // DMA simple sign/verify and CRA
 
 import {createHash, createPublicKey} from 'node:crypto';
+import {x509cert} from './chrome-extension/asset-authn/x509.mjs';
 import {createInterface} from 'readline';
 import {readFileSync, writeFileSync} from 'node:fs';
 
@@ -50,8 +51,9 @@ async function startCreator(name) {
 					content = content.toString().replace(/[\n|\t]/g,'');
 				}
 				const contentHash = sha256(content);
-				const signature = await sign(privateKeys[name], sha256(JSON.stringify({creator: name, contentHash})));
-				await chans[ra].put(new Message('register', JSON.stringify({creator: name, fileName: data.fileName, contentHash, signature})));
+				const fingerprint = {creator: certs[name], contentHash};
+				const signature = await sign(privateKeys[name], sha256(JSON.stringify(fingerprint)));
+				await chans[ra].put(new Message('register', JSON.stringify({fingerprint, signature, fileName: data.fileName})));
 				break;
 
 			case 'registerResponse':
@@ -67,12 +69,13 @@ async function startCreator(name) {
 			case 'delete': 
 				if(assets[name][data.fileName] != undefined) {
 					const signature = await sign(privateKeys[name], sha256(JSON.stringify({creator: name, contentHash: assets[name][data.fileName].fingerprint.contentHash})));
-					chans[ra].put(new Message('delete', JSON.stringify({
+					await chans[ra].put(new Message('delete', JSON.stringify({
 						creator: name,
 						fileName: data.fileName,
 						contentHash: assets[name][data.fileName].fingerprint.contentHash,
 						signature})));
 					delete assets[name][data.fileName];
+					writeFileSync(assetsFile, JSON.stringify(assets, null, 2));
 				} else {
 					chans['controller'].put(`creator: ${name} ${data.fileName} does not exist`);
 				}
@@ -97,13 +100,20 @@ async function startCaa(ra) {
 
 		switch(msg.type){
 			case 'register':
-				let {creator, contentHash, fileName, signature} = JSON.parse(msg.data);
-				let creatorPublicKey = createPublicKey(certs[creator]).export({type:'spki', format:'pem'});
-				if(await verify( creatorPublicKey, signature, sha256(JSON.stringify({creator, contentHash})) ) ){
+				let {fingerprint, signature, fileName} = JSON.parse(msg.data);
+				//let creatorPublicKey = createPublicKey(certs[creator]).export({type:'spki', format:'pem'});
+				let creatorPublicKey = createPublicKey(fingerprint.creator).export({type:'spki', format:'pem'});
+				const {creator, contentHash} = {...fingerprint, creator: 'creator.com'};
+				if(await verify( creatorPublicKey, signature, sha256(JSON.stringify(fingerprint)) ) ){
+					const pemHeader = '-----BEGIN CERTIFICATE-----\n',
+						pemFooter = '\n-----END CERTIFICATE-----\n',
+						{subject} = x509cert(fingerprint.creator.substring(pemHeader.length, fingerprint.creator.length - pemFooter.length));
+	
 					if(registeredContent[contentHash] == undefined){
-						registeredContent[contentHash] = {date: new Date, creator, fileName};
+						const entry = {date: new Date, CN: subject.CN, O: subject.O, fileName};
+						registeredContent[contentHash] = entry;
 						writeFileSync(registeredContentFile, JSON.stringify(registeredContent, null, 2));
-						const fingerprint = {contentHash, creator, ra};
+						const fingerprint = {contentHash, creatorCN: subject.CN, creatorO: subject.O, raCert: certs[ra]};
 						const signature = await sign(privateKeys[ra], sha256(JSON.stringify(fingerprint)));
 						chans[creator].put(new Message('registerResponse', JSON.stringify({fileName,fingerprint, signature})));
 					} else {
@@ -123,6 +133,7 @@ async function startCaa(ra) {
 							chans[creator].put(new Message('deleteResponse', JSON.stringify({message:`${fileName} not registered`})));
 						} else {
 							delete registeredContent[contentHash];
+							writeFileSync(registeredContentFile, JSON.stringify(registeredContent, null, 2));
 							chans[creator].put(new Message('deleteResponse', JSON.stringify({message:`${fileName} deleted`})));
 						}
 					} else {
