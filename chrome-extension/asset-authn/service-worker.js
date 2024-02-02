@@ -95,7 +95,7 @@ chrome.webRequest.onCompleted.addListener(
 			});
 			chrome.action.setTitle({
 				tabId: details.tabId,
-				title: `Credential details: \n\  CN: ${fingerprint.creatorCN}\n\  O: ${fingerprint.creatorO}\n`
+				title: `Credential details: \n\  CN: ${fingerprint.creatorCN}\n\  O: ${fingerprint.creatorO}\n${!verified ? 'cannot verify signature' : hash != fingerprint.contentHash ? 'content modified' : ''}`
 			});
 		}
 		return;
